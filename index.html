@@ -8,10 +8,10 @@
 		<div id = "string">AAAAABBBBBAAAAABBBBB</div>
 		<button onclick = "a()">A</button>
 		<button onclick = "b()">B</button>
-		<meter value="22" min="0" max="100">22 процента</meter><br>
+		<meter value="22" min="0" max="100"></meter><br>
 		
-		<div id = "level" class = "status-label">Уровень 1</div>
-		<div id = "progress" class = "status-label">Прогресс: 0%</div>
+		<div id = "level" class = "status-label">Level 1</div>
+		<div id = "progress" class = "status-label">Progress: 0%</div>
 	</div>
 </body>
 
@@ -47,9 +47,9 @@
 	function refresh() {
 		$('#string').text(current.view())
 		if (levels.indexOf(current) < levels.length-1) {
-			$('#level').text("Уровень " + levels.indexOf(current))
+			$('#level').text("Level " + levels.indexOf(current))
 		} else {
-			$('#level').text("Сам поиграл - дай другим поиграть")
+			$('#level').text("Commend plz")
 		}
 		$('#progress').text("Прогресс " + 100 * levels.indexOf(current) / (levels.length-1) + "%")
 		$('meter').attr('value', 100 * levels.indexOf(current) / (levels.length-1))
@@ -71,7 +71,7 @@
 		make('', {
 			a: function(){},
 			b: function(){},
-			initial: 'КОНЕЦ'
+			initial: 'THE END'
 		})
 	]
 	
@@ -81,13 +81,13 @@
 	
 	function click() {
 		if (current.win()) {
-			alert('Уровень пройден')
+			alert('Level complete')
 			current = levels[levels.indexOf(current)+1]
 			load(current)
 		}
 		refresh()
 		if (levels.indexOf(current) == levels.length-1) {
-			alert('Победа')
+			alert('Victory')
 			$('button').attr('disabled','disabled')
 		}
 	}
