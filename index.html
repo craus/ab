@@ -5,7 +5,7 @@
 
 <body>
 	<div id = "game">
-		<div id = "string">AAAAABBBBBAAAAABBBBB</div>
+		<div id = "string">ERROR: string is not initialized</div>
 		<button onclick = "a()">A</button>
 		<button onclick = "b()">B</button>
 		<meter value="22" min="0" max="100"></meter><br>
@@ -16,18 +16,10 @@
 </body>
 
 <script>
-	function removeFirstA() {
-		if (state[0] == 'A') {
-			state = state.substring(1)
-		}
+	String.prototype.set=function(index, character) {
+		return this.substr(0, index) + character + this.substr(index+character.length);
 	}
-	
-	function removeFirstB() {
-		if (state[0] == 'B') {
-			state = state.substring(1)
-		}
-	}
-	
+
 	function level(data) {
 		return $.extend({
 			view: function() { return state }
@@ -40,6 +32,36 @@
 		}, level(data))
 	}
 	
+	function rnd(a,b) {
+		if (b == undefined) {
+			b = a
+			a = 0
+		}
+		return a+Math.floor(Math.random()*(b-a))
+	}
+	
+	function shuffle(s) {
+		for (var i = 0; i < s.length-2; i++) {
+			x = rnd(i,s.length)
+			c = s[x]
+			s=s.set(x,s[i])
+			s=s.set(i,c)
+		}
+		return s
+	}
+	
+	function rndEl(a) {
+		return a[rnd(a.length)]
+	}
+	
+	function random(length, from) {
+		s = ''
+		for (var i = 0; i < (length || 7); i++) {
+			s += rndEl(from || 'AB')
+		}
+		return s
+	}
+	
 	function load(level) {
 		state = level.initial
 	}
@@ -47,11 +69,11 @@
 	function refresh() {
 		$('#string').text(current.view())
 		if (levels.indexOf(current) < levels.length-1) {
-			$('#level').text("Level " + levels.indexOf(current))
+			$('#level').text("Level " + levels.indexOf(current) + (current.name ? " - " + current.name : ''))
 		} else {
 			$('#level').text("Commend plz")
 		}
-		$('#progress').text("Progress " + 100 * levels.indexOf(current) / (levels.length-1) + "%")
+		$('#progress').text("Progress " + Math.round(100 * levels.indexOf(current) / (levels.length-1)) + "%")
 		$('meter').attr('value', 100 * levels.indexOf(current) / (levels.length-1))
 	}
 	
@@ -59,15 +81,64 @@
 	
 	levels = [
 		make('', {
-			a: function(){},
-			b: function(){},
-			initial: ''
+			a: function() {if (state[0] == 'A') state = state.substring(1)},
+			b: function() {if (state[state.length-1] == 'B') state = state.substring(0,state.length-1)},
+			initial: 'AB',
+			name: 'Hello, Buttons'
 		}),
 		make('', {
-			a: removeFirstA,
-			b: removeFirstB,
-			initial: 'ABAABBA'
+			a: function() {if (state[0] == 'A') state = state.substring(1)},
+			b: function() {if (state[0] == 'B') state = state.substring(1)},
+			initial: random(10),
+			name: 'Typing Lesson',
 		}),
+		make('', {
+			a: function() {if (state[0] == 'B') state = state.substring(1)},
+			b: function() {if (state[0] == 'A') state = state.substring(1)},
+			initial: random(10),
+			name: 'Negative',
+		}),
+		make('', {
+			a: function() {if (state[state.length-1] == 'A') state = state.substring(0,state.length-1)},
+			b: function() {if (state[state.length-1] == 'B') state = state.substring(0,state.length-1)},
+			initial: random(10),
+			name: 'Reverse'
+		}),
+		make('', {
+			a: function() {if (state[state.length-1] == 'B') state = state.substring(0,state.length-1)},
+			b: function() {if (state[state.length-1] == 'A') state = state.substring(0,state.length-1)},
+			initial: random(10),
+			name: 'Double Trouble'
+		}),		
+		level({
+			a: function() {state.position = (state.position + 1) % state.word.length},
+			b: function() {state.word = state.word.set(state.position, ((parseInt(state.word[state.position])+1)%10).toString())},
+			initial: {word: random(6,'0123456789'), position: 0},
+			view: function() {return state.word.substring(0,state.position) + "[" + state.word[state.position] + "]" + state.word.substring(state.position+1)},
+			//view: function() {return JSON.stringify(state)},
+			win: function() {return state.word == '000000'},
+			name: 'Zero-maker'
+		}),			
+		make('', {
+			a: function() {state = state.substring(1) + state[0]},
+			b: function() {if (parseInt(state[0])+1 == state.length) state = state.substring(1)},
+			initial: shuffle('0123456789'),
+			name: 'Countdown'
+		}),				
+		make('', {
+			a: function() {state=state.set(0, {'A' : 'B', 'B' : 'C', 'C' : 'A'}[state[0]])},
+			b: function() {if (state[0] == 'B') state = state.substring(1)},
+			initial: random(10, 'ABC'),
+			name: 'B-izator'
+		}),		
+		level({
+			a: function() {state.word += 'A'; if (!state.target.match("^" + state.word)) state.word = ''},
+			b: function() {state.word += 'B'; if (!state.target.match("^" + state.word)) state.word = ''},
+			initial: {word: '', target: random(10)},
+			win: function() {return state.word == state.target},
+			view: function() {return state.word},
+			name: 'Blind'
+		}),				
 		make('', {
 			a: function(){},
 			b: function(){},
@@ -81,13 +152,11 @@
 	
 	function click() {
 		if (current.win()) {
-			alert('Level complete')
 			current = levels[levels.indexOf(current)+1]
 			load(current)
 		}
 		refresh()
 		if (levels.indexOf(current) == levels.length-1) {
-			alert('Victory')
 			$('button').attr('disabled','disabled')
 		}
 	}
