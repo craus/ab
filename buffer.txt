@@ -1,0 +1,61 @@
+<head>
+	<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<div id = "test">
+	<canvas id="canvas" width = 1024 height = 768>
+</div>
+
+<script>
+
+	var canvas = document.getElementById('canvas')
+	var context = canvas.getContext('2d')
+
+	units = []
+
+	for (int i = 0; i < N; i++) {
+		units << {
+			x: i*10,
+			y: i*20,
+			r: 5,
+			c: '#FF0000'
+		}
+	}
+	
+	function line(x1,y1,x2,y2,c) {
+		ctx.strokeStyle= c || '#ffffff' 
+		context.moveTo(x1,y1)
+		context.lineTo(x2,y2)
+		context.stroke()
+	}
+	
+	function circle(x,y,r,c) {
+		context.fillStyle = c || '#ffffff' 
+		context.arc(x,y,r,0,2*Math.PI);
+		context.fill();
+	}
+	
+	function clear() {
+		context.clearRect(0,0,canvas.width, canvas.height)
+	}
+		
+	function drawUnit(unit) {
+		circle(unit.x, unit.y, unit.r, unit.c)
+	}
+	
+	function frame() {
+		units.forEach(function(unit) {
+			drawUnit(unit)
+		});
+		
+		line(0,0,canvas.width,canvas.height)
+		line(canvas.width,0,0,canvas.height)
+	}
+	
+	function tick() {
+		x++
+		frame()
+	}
+	
+	setInterval(tick, 1);
+</script>

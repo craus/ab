@@ -1,9 +1,105 @@
-<canvas id="myCanvas"></canvas>
+<head>
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+</head>
+
+<body>
+	<div id = "game">
+		<div id = "string">AAAAABBBBBAAAAABBBBB</div>
+		<button onclick = "a()">A</button>
+		<button onclick = "b()">B</button>
+		<meter value="22" min="0" max="100">22 процента</meter><br>
+		
+		<div id = "level" class = "status-label">Уровень 1</div>
+		<div id = "progress" class = "status-label">Прогресс: 0%</div>
+	</div>
+</body>
 
 <script>
+	function removeFirstA() {
+		if (state[0] == 'A') {
+			state = state.substring(1)
+		}
+	}
+	
+	function removeFirstB() {
+		if (state[0] == 'B') {
+			state = state.substring(1)
+		}
+	}
+	
+	function level(data) {
+		return $.extend({
+			view: function() { return state }
+		}, data)
+	}
+	
+	function make(target, data) {
+		return $.extend({
+			win: function() { return state == target }
+		}, level(data))
+	}
+	
+	function load(level) {
+		state = level.initial
+	}
+	
+	function refresh() {
+		$('#string').text(current.view())
+		if (levels.indexOf(current) < levels.length-1) {
+			$('#level').text("Уровень " + levels.indexOf(current))
+		} else {
+			$('#level').text("Сам поиграл - дай другим поиграть")
+		}
+		$('#progress').text("Прогресс " + 100 * levels.indexOf(current) / (levels.length-1) + "%")
+		$('meter').attr('value', 100 * levels.indexOf(current) / (levels.length-1))
+	}
+	
+	var state = ''
+	
+	levels = [
+		make('', {
+			a: function(){},
+			b: function(){},
+			initial: ''
+		}),
+		make('', {
+			a: removeFirstA,
+			b: removeFirstB,
+			initial: 'ABAABBA'
+		}),
+		make('', {
+			a: function(){},
+			b: function(){},
+			initial: 'КОНЕЦ'
+		})
+	]
+	
+	var current = levels[0]
+	load(current)
+	refresh()
+	
+	function click() {
+		if (current.win()) {
+			alert('Уровень пройден')
+			current = levels[levels.indexOf(current)+1]
+			load(current)
+		}
+		refresh()
+		if (levels.indexOf(current) == levels.length-1) {
+			alert('Победа')
+			$('button').attr('disabled','disabled')
+		}
+	}
+	
+	function a() {
+		current.a()
+		click();		
+	}
+	
+	function b() {
+		current.b()
+		click();		
+	}
 
-var canvas=document.getElementById('myCanvas');
-var ctx=canvas.getContext('2d');
-ctx.fillStyle='#FF0000';
-ctx.fillRect(canvas.width/2-10,canvas.height/2-10,20,20);
 </script>
